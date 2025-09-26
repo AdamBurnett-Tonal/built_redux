@@ -34,7 +34,7 @@ const _lintIgnores = """
 
 ActionsClass _actionsClassFromElement(ClassElement element, bool nndbEnabled) =>
     ActionsClass(
-      element.name,
+      element.name ?? (throw StateError('ClassElement has no name')),
       _actionsFromElement(element).toSet(),
       _composedActionClasses(element, nndbEnabled).toSet(),
       _actionsClassFromInheritedElements(element, nndbEnabled).toSet(),
@@ -44,7 +44,7 @@ Iterable<ComposedActionClass> _composedActionClasses(
         ClassElement element, bool nndbEnabled) =>
     element.fields.where((f) => _isReduxActions(f.type.element)).map((f) =>
         ComposedActionClass(
-            f.name, f.type.getDisplayString(withNullability: nndbEnabled)));
+            f.name ?? (throw StateError('Filed has no name')), f.type.getDisplayString()));
 
 Iterable<Action> _actionsFromElement(ClassElement element) => element.fields
     .where(_isActionDispatcher)
@@ -59,38 +59,14 @@ Iterable<ActionsClass> _actionsClassFromInheritedElements(
         .map((it) => _actionsClassFromElement(it, nndbEnabled));
 
 Action _fieldElementToAction(ClassElement element, FieldElement field) =>
-    Action('${element.name}-${field.name}', field.name,
-        _fieldType(element, field));
-
-// hack to return the generics for the action
-// this is used so action whose payloads are of generated types
-// will not result in dynamic
-String _fieldType(ClassElement element, FieldElement field) {
-  if (field.isSynthetic) {
-    return _syntheticFieldType(element, field);
-  }
-  return _getGenerics(field.source!.contents.data, field.nameOffset);
-}
-
-String _syntheticFieldType(ClassElement element, FieldElement field) {
-  final method = element.getGetter(field.name);
-  return _getGenerics(method!.source.contents.data, method.nameOffset);
-}
-
-String _getGenerics(String source, int nameOffset) {
-  final trimAfterName = source.substring(0, nameOffset);
-  final trimBeforeActionDispatcher =
-      trimAfterName.substring(trimAfterName.lastIndexOf('ActionDispatcher'));
-  return trimBeforeActionDispatcher.substring(
-      trimBeforeActionDispatcher.indexOf('<') + 1,
-      trimBeforeActionDispatcher.lastIndexOf('>'));
-}
+    Action('${element.name}-${field.name}', field.name ?? (throw StateError('ClassElement has no name')),
+        field.runtimeType.toString());
 
 bool _isReduxActions(Element? element) =>
     element is ClassElement && _hasSuperType(element, 'ReduxActions');
 
 bool _isActionDispatcher(FieldElement element) => element.type
-    .getDisplayString(withNullability: true)
+    .getDisplayString()
     .startsWith('ActionDispatcher<');
 
 bool _hasSuperType(ClassElement classElement, String type) =>
