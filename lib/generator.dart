@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -62,7 +63,7 @@ Action _fieldElementToAction(ClassElement element, FieldElement field) =>
     Action(
         '${element.name}-${field.name}',
         field.name ?? (throw StateError('ClassElement has no name')),
-        field.type.toString());
+        (field.type as ParameterizedType).typeArguments.first.toString());
 
 bool _isReduxActions(Element? element) =>
     element is ClassElement && _hasSuperType(element, 'ReduxActions');
