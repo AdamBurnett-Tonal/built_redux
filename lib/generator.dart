@@ -61,9 +61,18 @@ Iterable<ActionsClass> _actionsClassFromInheritedElements(
 
 Action _fieldElementToAction(ClassElement element, FieldElement field) =>
     Action(
-        '${element.name}-${field.name}',
-        field.name ?? (throw StateError('ClassElement has no name')),
-        (field.type as ParameterizedType).typeArguments.first.toString());
+      '${element.name}-${field.name}',
+      field.name ?? (throw StateError('ClassElement has no name')),
+      _fieldType(field),
+    );
+
+String _fieldType(FieldElement field) {
+  if (field.type is ParameterizedType) {
+    return (field.type as ParameterizedType).typeArguments.first.toString();
+  }
+
+  return field.type.toString();
+}
 
 bool _isReduxActions(Element? element) =>
     element is ClassElement && _hasSuperType(element, 'ReduxActions');
