@@ -43,8 +43,8 @@ ActionsClass _actionsClassFromElement(ClassElement element, bool nndbEnabled) =>
 Iterable<ComposedActionClass> _composedActionClasses(
         ClassElement element, bool nndbEnabled) =>
     element.fields.where((f) => _isReduxActions(f.type.element)).map((f) =>
-        ComposedActionClass(
-            f.name ?? (throw StateError('Filed has no name')), f.type.getDisplayString()));
+        ComposedActionClass(f.name ?? (throw StateError('Field has no name')),
+            f.type.getDisplayString()));
 
 Iterable<Action> _actionsFromElement(ClassElement element) => element.fields
     .where(_isActionDispatcher)
@@ -59,15 +59,16 @@ Iterable<ActionsClass> _actionsClassFromInheritedElements(
         .map((it) => _actionsClassFromElement(it, nndbEnabled));
 
 Action _fieldElementToAction(ClassElement element, FieldElement field) =>
-    Action('${element.name}-${field.name}', field.name ?? (throw StateError('ClassElement has no name')),
-        field.runtimeType.toString());
+    Action(
+        '${element.name}-${field.name}',
+        field.name ?? (throw StateError('ClassElement has no name')),
+        field.type.toString());
 
 bool _isReduxActions(Element? element) =>
     element is ClassElement && _hasSuperType(element, 'ReduxActions');
 
-bool _isActionDispatcher(FieldElement element) => element.type
-    .getDisplayString()
-    .startsWith('ActionDispatcher<');
+bool _isActionDispatcher(FieldElement element) =>
+    element.type.getDisplayString().startsWith('ActionDispatcher<');
 
 bool _hasSuperType(ClassElement classElement, String type) =>
     classElement.allSupertypes
